@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>INSERTTITLEHERE</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+@page {
+    size: letter;
+    margin: 0.5in 0.5in 0.6in 0.5in;
+    @bottom-right { content: counter(page) " / " counter(pages); }
+}
+
+html, body {
+    background: #ffffff;
+    color: #005661;
+    margin: 0;
+    padding: 0;
+    font-family: "Cartograph CF", "Fira Code", "JetBrains Mono",
+                 "Source Code Pro", Consolas, monospace;
+    font-size: 10pt;
+    line-height: 1.45;
+}
+
+header.listing-header {
+    border-bottom: 1px solid #c8c8c8;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: #5b858b;
+}
+header .filename { font-weight: 600; color: #005661; }
+
+pre.code-block {
+    margin: 0;
+    padding: 0 12px;
+    background: transparent;
+    white-space: pre-wrap;
+    word-break: break-word;
+    orphans: 3;
+    widows: 3;
+}
+
+pre.code-block code { counter-reset: line; display: block; }
+pre.code-block code .ln {
+    display: inline-block;
+    width: 2.4em;
+    margin-right: 1em;
+    color: #b8b8b8;
+    text-align: right;
+    user-select: none;
+}
+
+/* ---- Canonical Noctis Lux palette ---- */
+.hljs                       { background: transparent; color: #005661; }
+
+.hljs-comment, .hljs-quote  { color: #5b858b; font-style: italic; }
+
+.hljs-string, .hljs-regexp  { color: #16b673; }
+.hljs-subst                 { color: #16b673; }
+
+.hljs-char.escape_          { color: #e66533; font-weight: 600; }
+
+.hljs-keyword, .hljs-literal{ color: #df769b; font-weight: 600; }
+.hljs-built_in              { color: #df769b; }
+
+.hljs-number                { color: #7060eb; }
+
+.hljs-title.function_       { color: #16a3b6; }
+.hljs-title.class_          { color: #d67e5c; font-weight: 600; }
+
+.hljs-method-call           { color: #1ba8bf; }     /* turquoise */
+.hljs-function-keyword      { color: #e66533; font-weight: 600; }   /* `func` */
+
+.hljs-declared              { color: #c47428; font-weight: 500; }   /* var/signal name */
+.hljs-constant              { color: #d5971a; }                      /* SCREAMING_SNAKE */
+
+.hljs-attr                  { color: #d5971a; }
+.hljs-property              { color: #d67e5c; }
+
+.hljs-meta                  { color: #d67e5c; }    /* @export, @onready */
+
+.hljs-symbol                { color: #d5971a; }    /* $Node, &"foo", ^"path" */
+.hljs-type                  { color: #d67e5c; }
+
+.hljs-operator              { color: #df769b; }
+.hljs-punctuation           { color: #df769b; }
+
+.hljs-doctag                { color: #5b858b; font-style: italic; }
+
+/* ---- Rainbow brackets (Lux-tuned) ---- */
+.bracket-0 { color: #d5971a; }
+.bracket-1 { color: #7060eb; }
+.bracket-2 { color: #16a3b6; }
+.bracket-3 { color: #d67e5c; }
+.bracket-4 { color: #df769b; }
+.bracket-5 { color: #16b673; }
+.bracket-error { color: #c0392b; font-weight: 700; text-decoration: underline wavy; }
+
+#diagnostic {
+    display: none;
+    margin: 6px 12px;
+    padding: 6px 10px;
+    border: 1px solid #df769b;
+    color: #df769b;
+    background: #fff5f8;
+    font-size: 9pt;
+}
+#diagnostic.visible { display: block; }
+</style>
+</head>
+
+<body>
+<header class="listing-header">
+    <span class="filename">INSERTFILENAMEHERE</span>
+    <span class="meta">GDScript &middot; Noctis Lux Inspired</span>
+</header>
+
+<div id="diagnostic"></div>
+
+<pre class="code-block"><code class="language-gdscript">INSERTCODEHEREextends Node
+
+@onready var adventure_log = $Control/AdventureLog
+@onready var command_input = $Control/CommandInput
+
+signal item_taken(item_id: String)
+signal vault_reached
+
+var current_room: String = "entry_hall"
+var inventory: Array = []
+var has_key: bool = false
+
+const DIRECTION_ALIASES : Dictionary = {
+	"n" : "north",
+	"s" : "south",
+	"w" : "west",
+	"e" : "east"
+}
+
+# Room list. Name, description, exits--&gt;room key, optional item.
+var rooms := {
+	"entry_hall" : {
+		"name" : "Crumbling Entry Hall",
+		"desc" : "Torchlight flickers across mossy stone. A heavy door looms to the north.",
+		"exits" : {"north" : "great_hall"}
+	},
+	"great_hall" : {
+		"name" : "Great Hall",
+		"desc" : "Tattered banners hang from the rafters of a vast, echoing chamber.",
+		"exits" : {"south" : "entry_hall", "east" : "armory", "west" : "library", "north" : "throne_room"}
+	},
+	"armory" : {
+		"name" : "Dusty Armory",
+		"desc" : "Rusted weapons line the walls. A small iron key glints on a workbench.",
+		"exits" : {"west" : "great_hall"},
+		"item" : "iron_key"
+	},
+	"library" : {
+		"name" : "Forgotten Library",
+		"desc" : "Stacks of decaying tomes lean precariously. A scroll lies open on a podium.",
+		"exits" : {"east" : "great_hall"},
+		"item" : "scroll"
+	},
+	"throne_room" : {
+		"name" : "Shattered Throne Room",
+		"desc" : "A cracked throne sits before a sealed gate. Only a key will open it.",
+		"exits" : {"south" : "great_hall", "north" : "treasure_vault"}
+	},
+	"treasure_vault" : {
+		"name" : "Treasure Vault",
+		"desc" : "Mounds of gold glimmer in the lantern light. You've found it!",
+		"exits" : {"south" : "throne_room"}
+	}
+}
+
+func _ready() -&gt; void:
+	_describe_room()
+	command_input.grab_focus()
+	item_taken.connect(_on_item_taken)
+	vault_reached.connect(_on_vault_reached)
+
+func _input(event: InputEvent) -&gt; void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ENTER and command_input.has_focus():
+			_on_command(command_input.text)
+			get_viewport().set_input_as_handled()
+
+func _on_command(text: String) -&gt; void:
+	command_input.clear()
+	var cmd : String = text.strip_edges().to_lower()
+	if cmd == "":
+		return
+	_log("&gt; " + cmd)
+
+	##Three options for taking in the direction command: inline dict, match,
+	##and a named dict constant. Type all of them since clearly you'll need
+	##all three at various points! This is becoming good dictionary practice.
+	#
+	#if cmd in ["n", "s", "e", "w"]:cmd={"n":"north","s":"south","e":"east","w":"west"}[cmd]
+	#
+	#var aliases : Dictionary = {"n":"north","s":"south","w":"west","e":"east"}
+	#cmd = aliases[cmd]
+	#
+	#match cmd:
+		#"n" : cmd = "north"
+		#"s" : cmd = "south"
+		#"e" : cmd = "east"
+		#"w" : cmd = "west"
+
+	if cmd in DIRECTION_ALIASES:
+		cmd = DIRECTION_ALIASES[cmd]
+
+	if cmd == "take":
+		_try_take()
+	elif cmd in rooms[current_room].exits:
+		var next_room : String = rooms[current_room].exits[cmd]
+		if next_room == "treasure_vault" and not has_key:
+			_log("The gate is sealed. You need a key.")
+		else:
+			current_room = next_room
+			_describe_room()
+			if current_room == "treasure_vault":
+				vault_reached.emit()
+	else:
+		_log("You can't go that way.")
+
+func _try_take() -&gt; void:
+	var room : Dictionary = rooms[current_room]
+	if "item" in room:
+		var item : String = room.item
+		inventory.append(item)
+		room.erase("item")
+		if item == "iron_key":
+			has_key = true
+		item_taken.emit(item)
+		_log("You picked up the " + item.replace("_", " ") + ".")
+	else:
+		_log("There is nothing here to take.")
+
+func _describe_room() -&gt; void:
+	var room : Dictionary = rooms[current_room]
+	_log("[b]%s[/b]" % room.name.capitalize())
+	_log(room.desc)
+	_log("Exits: " + ", ".join(room.exits.keys()))
+
+func _on_item_taken(item_id: String) -&gt; void:
+	print("Picked up: " + item_id)
+
+func _on_vault_reached() -&gt; void:
+	_log("You've reached the vault! Adventure complete.")
+
+func _log(text: String) -&gt; void:
+	adventure_log.append_text(text + "\n")
+INSERTLASTCODELINEISHERE
+</code></pre>
+
+<script>
+function gdscriptLang(hljs) {
+  const KEYWORDS = {
+    keyword:
+      "and as assert async await break breakpoint continue elif else " +
+      "enum for if in is master mastersync match not onready or pass " +
+      "puppet puppetsync remote remotesync return self setget " +
+      "static tool when while yield",
+    literal: "true false null PI TAU INF NAN",
+    built_in:
+      "Vector2 Vector2i Vector3 Vector3i Vector4 Vector4i Color Rect2 Rect2i Transform2D " +
+      "Transform3D Basis Quaternion Plane AABB Projection NodePath StringName " +
+      "Array PackedByteArray PackedInt32Array PackedInt64Array PackedFloat32Array " +
+      "PackedFloat64Array PackedStringArray PackedVector2Array PackedVector3Array " +
+      "PackedColorArray Dictionary Callable Signal RID Object " +
+      "Node Node2D Node3D CharacterBody2D CharacterBody3D RigidBody2D RigidBody3D " +
+      "StaticBody2D StaticBody3D Area2D Area3D Camera2D Camera3D AnimationPlayer " +
+      "AnimationTree CanvasLayer Control Sprite2D Sprite3D MeshInstance3D RichTextLabel " +
+      "Resource Texture2D Shader ShaderMaterial RenderingDevice " +
+      "InputEvent InputEventKey " +
+      "Input Engine OS Time ResourceLoader ProjectSettings"
+  };
+
+  const NUMBER = {
+    className: "number",
+    variants: [
+      { begin: "\\b0[xX][0-9a-fA-F_]+\\b" },
+      { begin: "\\b0[bB][01_]+\\b" },
+      { begin: "\\b\\d[\\d_]*(\\.\\d[\\d_]*)?([eE][+-]?\\d+)?\\b" }
+    ],
+    relevance: 0
+  };
+
+  const ESCAPE = {
+    scope: "char.escape",
+    match: /\\(?:[abfnrtv\\'"0]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{6})/
+  };
+
+  const STRING = {
+    className: "string",
+    variants: [
+      { begin: '"""', end: '"""', contains: [ESCAPE] },
+      { begin: "'''", end: "'''", contains: [ESCAPE] },
+      { begin: '"', end: '"', contains: [ESCAPE] },
+      { begin: "'", end: "'", contains: [ESCAPE] }
+    ]
+  };
+
+  const SYMBOL = {
+    className: "symbol",
+    variants: [
+      { begin: "&\"[^\"]*\"" },
+      { begin: "\\^\"[^\"]*\"" },
+      { begin: "\\$[A-Za-z_][A-Za-z0-9_/]*" }
+    ]
+  };
+
+  const DECORATOR = { className: "meta", begin: "@[A-Za-z_][A-Za-z0-9_]*" };
+  const COMMENT = hljs.HASH_COMMENT_MODE;
+
+  // ----- Declaration patterns (var/const/signal NAME) -----
+  // var <name> -> name = .hljs-declared (gold-sand)
+  const VAR_DECL = {
+    begin: /\bvar\b/,
+    end: /[\s:=,)]/,
+    excludeEnd: true,
+    returnBegin: true,
+    contains: [
+      { className: "keyword", begin: /\bvar\b/ },
+      { className: "declared", begin: /[A-Za-z_][A-Za-z0-9_]*/ }
+    ]
+  };
+
+  // const NAME -> NAME = .hljs-constant (galliano)
+  const CONST_DECL = {
+    begin: /\bconst\b/,
+    end: /[\s:=,)]/,
+    excludeEnd: true,
+    returnBegin: true,
+    contains: [
+      { className: "keyword", begin: /\bconst\b/ },
+      { className: "constant", begin: /[A-Za-z_][A-Za-z0-9_]*/ }
+    ]
+  };
+
+  // signal name(args) -> name = .hljs-declared
+  const SIGNAL_DECL = {
+    begin: /\bsignal\b/,
+    end: /[(\n]/,
+    excludeEnd: true,
+    returnBegin: true,
+    contains: [
+      { className: "keyword", begin: /\bsignal\b/ },
+      { className: "declared", begin: /[A-Za-z_][A-Za-z0-9_]*/ }
+    ]
+  };
+
+  // class_name / class / extends
+  const CLASS_DECL = {
+    begin: /\b(class_name|class|extends)\b/,
+    end: "$",
+    excludeEnd: true,
+    returnBegin: true,
+    contains: [
+      { className: "keyword", begin: /\b(class_name|class|extends)\b/ },
+      { className: "title class_", begin: /[A-Za-z_][A-Za-z0-9_]*/ }
+    ]
+  };
+
+  // func name(...) -> func cinnabar, name eastern blue
+  const FUNC_DEF = {
+    begin: /\bfunc\b/,
+    end: "[(:\\n]",
+    excludeEnd: true,
+    returnBegin: true,
+    contains: [
+      { className: "function-keyword", begin: /\bfunc\b/ },
+      { className: "title function_", begin: /[A-Za-z_][A-Za-z0-9_]*/ }
+    ]
+  };
+
+  // ----- Reference patterns -----
+
+  // SCREAMING_SNAKE_CASE constants anywhere -> galliano.
+  // Must be at least 2 chars and contain an underscore or be all-caps.
+  const CONSTANT_REF = {
+    className: "constant",
+    begin: /\b[A-Z][A-Z0-9_]+\b/
+  };
+
+  // Method call: `.method(` -> method (turquoise)
+  const METHOD_CALL = {
+    className: "method-call",
+    begin: /(?<=\.)[A-Za-z_][A-Za-z0-9_]*(?=\s*\()/
+  };
+
+  // Property access: `.name` not followed by `(` -> property (japonica)
+  const PROPERTY = {
+    className: "property",
+    begin: /(?<=\.)[A-Za-z_][A-Za-z0-9_]*(?!\s*\()/
+  };
+
+  // Bare function call: identifier followed by `(`, NOT preceded by `.`
+  // Keywords matter here because we want `if(...)` style not to recolor `if`.
+  // Highlight.js keyword scanning runs on this match against the rule's own
+  // keywords map (inherited from parent if not specified), so keywords win.
+  const FUNCTION_CALL = {
+    className: "title function_",
+    begin: /(?<![\w.])[A-Za-z_][A-Za-z0-9_]*(?=\s*\()/,
+    keywords: KEYWORDS
+  };
+
+  // Type annotations: `: TypeName` or `-> TypeName` (capitalized)
+  const TYPE_ANNOT = {
+    className: "type",
+    begin: /(?<=[:>])\s*[A-Z][A-Za-z0-9_]*/
+  };
+
+  // Operators (multichar before single-char)
+  const OPERATOR = {
+    className: "operator",
+    match: /:=|->|==|!=|<=|>=|&&|\|\||[+\-*/%=<>!&|^~]/
+  };
+
+  // The dot itself
+  const DOT_PUNCT = {
+    className: "punctuation",
+    match: /\./
+  };
+
+  // NOTE: deliberately NO catch-all VARIABLE rule here. Letting unmatched
+  // identifiers fall through means highlight.js's keyword scanner can
+  // still color `for`, `in`, `if`, `var`, etc. against KEYWORDS.
+
+  return {
+    name: "GDScript",
+    aliases: ["gd"],
+    keywords: KEYWORDS,
+    contains: [
+      COMMENT,
+      STRING,
+      NUMBER,
+      DECORATOR,
+      SYMBOL,
+      // Declarations first so the declared name gets its special color
+      VAR_DECL,
+      CONST_DECL,
+      SIGNAL_DECL,
+      CLASS_DECL,
+      FUNC_DEF,
+      // Then references
+      CONSTANT_REF,    // SCREAMING_SNAKE before generic identifier patterns
+      METHOD_CALL,
+      PROPERTY,
+      FUNCTION_CALL,
+      TYPE_ANNOT,
+      OPERATOR,
+      DOT_PUNCT
+    ]
+  };
+}
+
+const diag = document.getElementById("diagnostic");
+function showDiag(msg) {
+    diag.textContent = "Diagnostic: " + msg;
+    diag.classList.add("visible");
+}
+
+function colorizeBrackets(rootEl) {
+    const OPENERS = { "(": ")", "[": "]", "{": "}" };
+    const CLOSERS = { ")": "(", "]": "[", "}": "{" };
+    const PALETTE_SIZE = 6;
+    const stack = [];
+
+    const walker = document.createTreeWalker(
+        rootEl, NodeFilter.SHOW_TEXT,
+        {
+            acceptNode(node) {
+                let p = node.parentElement;
+                while (p && p !== rootEl) {
+                    if (p.classList && (
+                        p.classList.contains("hljs-string") ||
+                        p.classList.contains("hljs-comment") ||
+                        p.classList.contains("hljs-regexp") ||
+                        p.classList.contains("hljs-symbol") ||
+                        p.classList.contains("hljs-doctag"))) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    p = p.parentElement;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        }
+    );
+
+    const targets = [];
+    let n;
+    while ((n = walker.nextNode())) targets.push(n);
+
+    targets.forEach(textNode => {
+        const text = textNode.nodeValue;
+        if (!/[(){}\[\]]/.test(text)) return;
+        const frag = document.createDocumentFragment();
+        let buf = "";
+        const flush = () => {
+            if (buf.length) {
+                frag.appendChild(document.createTextNode(buf));
+                buf = "";
+            }
+        };
+        for (const ch of text) {
+            if (OPENERS[ch]) {
+                flush();
+                const depth = stack.length % PALETTE_SIZE;
+                const span = document.createElement("span");
+                span.className = "bracket-" + depth;
+                span.textContent = ch;
+                frag.appendChild(span);
+                stack.push({ char: ch, depth });
+            } else if (CLOSERS[ch]) {
+                flush();
+                const span = document.createElement("span");
+                const top = stack[stack.length - 1];
+                if (top && top.char === CLOSERS[ch]) {
+                    span.className = "bracket-" + top.depth;
+                    stack.pop();
+                } else {
+                    span.className = "bracket-error";
+                }
+                span.textContent = ch;
+                frag.appendChild(span);
+            } else {
+                buf += ch;
+            }
+        }
+        flush();
+        textNode.parentNode.replaceChild(frag, textNode);
+    });
+}
+
+if (typeof hljs === "undefined") {
+    showDiag("highlight.js failed to load. Check network or download highlight.min.js locally.");
+} else {
+    hljs.registerLanguage("gdscript", gdscriptLang);
+
+    document.querySelectorAll("pre.code-block code").forEach(block => {
+        try {
+            hljs.highlightElement(block);
+        } catch (e) {
+            showDiag("highlight failed: " + e.message);
+            return;
+        }
+        const tokenCount = block.querySelectorAll("[class*='hljs-']").length;
+        if (tokenCount === 0) {
+            showDiag("Highlighting ran but produced 0 token spans. " +
+                     "Check that <code> has class='language-gdscript'.");
+            return;
+        }
+        colorizeBrackets(block);
+    });
+
+    document.querySelectorAll("pre.code-block code").forEach(block => {
+        const lines = block.innerHTML.split("\n");
+        block.innerHTML = lines.map((l, i) =>
+            `<span class="ln">${i + 1}</span>${l}`
+        ).join("\n");
+    });
+}
+</script>
+</body>
+</html>
