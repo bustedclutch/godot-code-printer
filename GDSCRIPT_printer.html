@@ -92,13 +92,25 @@ pre.code-block code .ln {
 
 .hljs-doctag                { color: #5b858b; font-style: italic; }
 
-/* ---- Rainbow brackets (Lux-tuned) ---- */
-.bracket-0 { color: #d5971a; }
-.bracket-1 { color: #7060eb; }
-.bracket-2 { color: #16a3b6; }
-.bracket-3 { color: #d67e5c; }
-.bracket-4 { color: #df769b; }
-.bracket-5 { color: #16b673; }
+/* ---- Rainbow brackets, per type for clarity ---- */
+/* Parens () — warm gold/orange family */
+.bracket-p-0 { color: #d5971a; }
+.bracket-p-1 { color: #d67e5c; }
+.bracket-p-2 { color: #e66533; }
+.bracket-p-3 { color: #c47428; }
+
+/* Braces {} — purple/pink family */
+.bracket-b-0 { color: #7060eb; }
+.bracket-b-1 { color: #df769b; }
+.bracket-b-2 { color: #9a5fc4; }
+.bracket-b-3 { color: #5b46c8; }
+
+/* Square brackets [] — teal/green family */
+.bracket-s-0 { color: #16a3b6; }
+.bracket-s-1 { color: #16b673; }
+.bracket-s-2 { color: #1ba8bf; }
+.bracket-s-3 { color: #0d8a93; }
+
 .bracket-error { color: #c0392b; font-weight: 700; text-decoration: underline wavy; }
 
 #diagnostic {
@@ -469,7 +481,8 @@ function showDiag(msg) {
 function colorizeBrackets(rootEl) {
     const OPENERS = { "(": ")", "[": "]", "{": "}" };
     const CLOSERS = { ")": "(", "]": "[", "}": "{" };
-    const PALETTE_SIZE = 6;
+    const TYPE_PREFIX = { "(": "p", "{": "b", "[": "s" };
+    const PALETTE_SIZE = 4;
     const stack = [];
 
     const walker = document.createTreeWalker(
@@ -511,18 +524,19 @@ function colorizeBrackets(rootEl) {
         for (const ch of text) {
             if (OPENERS[ch]) {
                 flush();
+                const type = TYPE_PREFIX[ch];
                 const depth = stack.length % PALETTE_SIZE;
                 const span = document.createElement("span");
-                span.className = "bracket-" + depth;
+                span.className = `bracket-${type}-${depth}`;
                 span.textContent = ch;
                 frag.appendChild(span);
-                stack.push({ char: ch, depth });
+                stack.push({ char: ch, depth, type });
             } else if (CLOSERS[ch]) {
                 flush();
                 const span = document.createElement("span");
                 const top = stack[stack.length - 1];
                 if (top && top.char === CLOSERS[ch]) {
-                    span.className = "bracket-" + top.depth;
+                    span.className = `bracket-${top.type}-${top.depth}`;
                     stack.pop();
                 } else {
                     span.className = "bracket-error";
