@@ -1,8 +1,10 @@
-# GDScript Printer
+# Godot Code Printer
 
 Want to print your gdscript to a page so you can look at it later all-pretty-like? Realized in horror that the vscode print extensions don't support gdscript? Love the noctis lux color vibes on-screen and wanted them off-screen?
 
 Well here's an HTML file for you!
+
+> Currently includes a **GDScript** template (`GDSCRIPT_printer.html`). A **GDShader** template is on the way.
 
 ![Example of the rendered output, showing the Noctis-Lux-inspired color scheme](html_screencap.png)
 
