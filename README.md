@@ -4,7 +4,7 @@ Want to print your gdscript to a page so you can look at it later all-pretty-lik
 
 Well here's an HTML file for you!
 
-> Currently includes a **GDScript** template (`GDSCRIPT_printer.html`). A **GDShader** template is on the way.
+> Includes templates for **GDScript** (`GDSCRIPT_printer.html`) and **GDShader** (`GDSHADER_printer.html`).
 
 ![Example of the rendered output, showing the Noctis-Lux-inspired color scheme](html_screencap.png)
 

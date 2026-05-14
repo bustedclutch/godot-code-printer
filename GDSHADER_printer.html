@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>INSERTTITLEHERE</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+@page {
+    size: letter;
+    margin: 0.5in 0.5in 0.6in 0.5in;
+    @bottom-right { content: counter(page) " / " counter(pages); }
+}
+
+html, body {
+    background: #ffffff;
+    color: #005661;
+    margin: 0;
+    padding: 0;
+    font-family: "Cartograph CF", "Fira Code", "JetBrains Mono",
+                 "Source Code Pro", Consolas, monospace;
+    font-size: 10pt;
+    line-height: 1.45;
+}
+
+header.listing-header {
+    border-bottom: 1px solid #c8c8c8;
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: #5b858b;
+}
+header .filename { font-weight: 600; color: #005661; }
+
+pre.code-block {
+    margin: 0;
+    padding: 0 12px;
+    background: transparent;
+    white-space: pre-wrap;
+    word-break: break-word;
+    orphans: 3;
+    widows: 3;
+}
+
+pre.code-block code { counter-reset: line; display: block; }
+pre.code-block code .ln {
+    display: inline-block;
+    width: 2.4em;
+    margin-right: 1em;
+    color: #b8b8b8;
+    text-align: right;
+    user-select: none;
+}
+
+/* ---- Canonical Noctis Lux palette ---- */
+.hljs                       { background: transparent; color: #005661; }
+
+.hljs-comment, .hljs-quote  { color: #5b858b; font-style: italic; }
+
+.hljs-string, .hljs-regexp  { color: #16b673; }
+.hljs-subst                 { color: #16b673; }
+
+.hljs-char.escape_          { color: #e66533; font-weight: 600; }
+
+.hljs-keyword, .hljs-literal{ color: #df769b; font-weight: 600; }
+.hljs-built_in              { color: #df769b; }
+
+.hljs-number                { color: #7060eb; }
+
+.hljs-title.function_       { color: #16a3b6; }
+.hljs-title.class_          { color: #d67e5c; font-weight: 600; }
+
+.hljs-method-call           { color: #1ba8bf; }     /* turquoise */
+.hljs-function-keyword      { color: #e66533; font-weight: 600; }   /* `func` */
+
+.hljs-declared              { color: #c47428; font-weight: 500; }   /* var/signal name */
+.hljs-constant              { color: #d5971a; }                      /* SCREAMING_SNAKE */
+
+.hljs-attr                  { color: #d5971a; }
+.hljs-property              { color: #d67e5c; }
+
+.hljs-meta                  { color: #d67e5c; }    /* source_color, hint_range, #include */
+
+.hljs-symbol                { color: #d5971a; }
+.hljs-type                  { color: #d67e5c; }
+
+.hljs-operator              { color: #df769b; }
+.hljs-punctuation           { color: #df769b; }
+
+.hljs-doctag                { color: #5b858b; font-style: italic; }
+
+/* ---- Rainbow brackets, per type for clarity ---- */
+/* Parens () — warm gold/orange family */
+.bracket-p-0 { color: #d5971a; }
+.bracket-p-1 { color: #d67e5c; }
+.bracket-p-2 { color: #e66533; }
+.bracket-p-3 { color: #c47428; }
+
+/* Braces {} — purple/pink family */
+.bracket-b-0 { color: #7060eb; }
+.bracket-b-1 { color: #df769b; }
+.bracket-b-2 { color: #9a5fc4; }
+.bracket-b-3 { color: #5b46c8; }
+
+/* Square brackets [] — teal/green family */
+.bracket-s-0 { color: #16a3b6; }
+.bracket-s-1 { color: #16b673; }
+.bracket-s-2 { color: #1ba8bf; }
+.bracket-s-3 { color: #0d8a93; }
+
+.bracket-error { color: #c0392b; font-weight: 700; text-decoration: underline wavy; }
+
+#diagnostic {
+    display: none;
+    margin: 6px 12px;
+    padding: 6px 10px;
+    border: 1px solid #df769b;
+    color: #df769b;
+    background: #fff5f8;
+    font-size: 9pt;
+}
+#diagnostic.visible { display: block; }
+</style>
+</head>
+
+<body>
+<header class="listing-header">
+    <span class="filename">INSERTFILENAMEHERE</span>
+    <span class="meta">GDShader &middot; Noctis Lux Inspired</span>
+</header>
+
+<div id="diagnostic"></div>
+
+<pre class="code-block"><code class="language-gdshader">INSERTCODEHEREshader_type spatial;
+render_mode cull_disabled;
+
+uniform vec3 shallow_color : source_color = vec3(0.3, 0.7, 0.9);
+uniform vec3 deep_color : source_color = vec3(0.05, 0.2, 0.4);
+uniform float wave_speed : hint_range(0.0, 4.0) = 1.0;
+uniform float wave_height : hint_range(0.0, 1.0) = 0.15;
+
+const float TWO_PI = 6.2831853;
+
+float wave(vec2 p, float t) {
+    return sin(p.x * 3.0 + t) * cos(p.y * 2.0 + t * 0.7);
+}
+
+void vertex() {
+    float t = TIME * wave_speed;
+    VERTEX.y += wave(VERTEX.xz, t) * wave_height;
+}
+
+void fragment() {
+    float crest = clamp(wave(UV * TWO_PI, TIME * wave_speed) * 0.5 + 0.5, 0.0, 1.0);
+    ALBEDO = mix(deep_color, shallow_color, crest);
+    ALPHA = 0.8;
+}
+INSERTLASTCODELINEISHERE</code></pre>
+
+<script>
+function gdshaderLang(hljs) {
+  const KEYWORDS = {
+    keyword:
+      "shader_type render_mode const uniform varying in out inout " +
+      "if else for while do break continue return switch case default " +
+      "struct discard precision lowp mediump highp global instance",
+    literal: "true false",
+    built_in:
+      // Scalar/vector/matrix/sampler types
+      "void bool int uint float double " +
+      "vec2 vec3 vec4 ivec2 ivec3 ivec4 uvec2 uvec3 uvec4 bvec2 bvec3 bvec4 " +
+      "mat2 mat3 mat4 mat2x2 mat2x3 mat2x4 mat3x2 mat3x3 mat3x4 mat4x2 mat4x3 mat4x4 " +
+      "sampler2D sampler3D samplerCube sampler2DArray " +
+      "isampler2D isampler3D isamplerCube usampler2D usampler3D usamplerCube " +
+      // Common GLSL built-in functions
+      "abs sign floor ceil fract mod min max clamp mix step smoothstep round trunc " +
+      "sin cos tan asin acos atan sinh cosh tanh pow exp log exp2 log2 sqrt inversesqrt " +
+      "length distance dot cross normalize reflect refract faceforward " +
+      "transpose inverse determinant matrixCompMult outerProduct " +
+      "lessThan greaterThan lessThanEqual greaterThanEqual equal notEqual any all not " +
+      "texture textureLod textureGrad textureProj textureSize texelFetch " +
+      "dFdx dFdy fwidth"
+  };
+
+  const NUMBER = {
+    className: "number",
+    variants: [
+      { begin: "\\b0[xX][0-9a-fA-F]+[uU]?\\b" },
+      { begin: "\\b\\d+\\.\\d*([eE][+-]?\\d+)?[fF]?\\b" },
+      { begin: "\\b\\.\\d+([eE][+-]?\\d+)?[fF]?\\b" },
+      { begin: "\\b\\d+[eE][+-]?\\d+[fF]?\\b" },
+      { begin: "\\b\\d+[fFuU]?\\b" }
+    ],
+    relevance: 0
+  };
+
+  const ESCAPE = {
+    scope: "char.escape",
+    match: /\\(?:[abfnrtv\\'"0]|x[0-9a-fA-F]{2}|u[0-9a-fA-F]{4})/
+  };
+
+  const STRING = {
+    className: "string",
+    variants: [
+      { begin: '"', end: '"', contains: [ESCAPE] },
+      { begin: "'", end: "'", contains: [ESCAPE] }
+    ]
+  };
+
+  const LINE_COMMENT = hljs.COMMENT("//", "$");
+  const BLOCK_COMMENT = hljs.COMMENT("/\\*", "\\*/");
+
+  // Preprocessor-ish: #include "foo.gdshaderinc"
+  const PREPROCESSOR = {
+    className: "meta",
+    begin: /^\s*#\s*include\b/,
+    end: /$/,
+    contains: [
+      { className: "string", begin: '"', end: '"' }
+    ]
+  };
+
+  // Godot hint annotations after `:` in uniform declarations.
+  // Match known hint names so we don't accidentally swallow ternary `:`
+  // or `case X:` colons.
+  const HINT = {
+    className: "meta",
+    begin: /:\s*(source_color|hint_color|hint_range|hint_default_white|hint_default_black|hint_default_transparent|hint_normal|hint_anisotropy|hint_roughness_normal|hint_roughness_gray|hint_roughness_r|hint_roughness_g|hint_roughness_b|hint_roughness_a|hint_screen_texture|hint_depth_texture|hint_normal_roughness_texture|filter_nearest|filter_linear|filter_nearest_mipmap|filter_linear_mipmap|filter_nearest_mipmap_anisotropic|filter_linear_mipmap_anisotropic|repeat_enable|repeat_disable|instance_index)\b/
+  };
+
+  // SCREAMING_SNAKE_CASE constants and Godot built-in shader vars (ALBEDO, UV, TIME...)
+  const CONSTANT_REF = {
+    className: "constant",
+    begin: /\b[A-Z][A-Z0-9_]+\b/
+  };
+
+  // Method call: `.method(`
+  const METHOD_CALL = {
+    className: "method-call",
+    begin: /(?<=\.)[A-Za-z_][A-Za-z0-9_]*(?=\s*\()/
+  };
+
+  // Property / swizzle access: `.xyz`, `.rgba`, `.name`
+  const PROPERTY = {
+    className: "property",
+    begin: /(?<=\.)[A-Za-z_][A-Za-z0-9_]*(?!\s*\()/
+  };
+
+  // Bare function call: identifier followed by `(`, not preceded by `.`
+  // Keyword scanning runs against KEYWORDS here, so built-in funcs like
+  // `length` get the built_in color and custom funcs stay as title function_.
+  const FUNCTION_CALL = {
+    className: "title function_",
+    begin: /(?<![\w.])[A-Za-z_][A-Za-z0-9_]*(?=\s*\()/,
+    keywords: KEYWORDS
+  };
+
+  // Operators (multichar first)
+  const OPERATOR = {
+    className: "operator",
+    match: /\+\+|--|==|!=|<=|>=|&&|\|\||<<|>>|[+\-*/%=<>!&|^~?:]/
+  };
+
+  // The dot itself
+  const DOT_PUNCT = {
+    className: "punctuation",
+    match: /\./
+  };
+
+  return {
+    name: "GDShader",
+    aliases: ["gdshader", "godotshader"],
+    keywords: KEYWORDS,
+    contains: [
+      LINE_COMMENT,
+      BLOCK_COMMENT,
+      PREPROCESSOR,
+      STRING,
+      NUMBER,
+      HINT,
+      CONSTANT_REF,
+      METHOD_CALL,
+      PROPERTY,
+      FUNCTION_CALL,
+      OPERATOR,
+      DOT_PUNCT
+    ]
+  };
+}
+
+const diag = document.getElementById("diagnostic");
+function showDiag(msg) {
+    diag.textContent = "Diagnostic: " + msg;
+    diag.classList.add("visible");
+}
+
+function colorizeBrackets(rootEl) {
+    const OPENERS = { "(": ")", "[": "]", "{": "}" };
+    const CLOSERS = { ")": "(", "]": "[", "}": "{" };
+    const TYPE_PREFIX = { "(": "p", "{": "b", "[": "s" };
+    const PALETTE_SIZE = 4;
+    const stack = [];
+
+    const walker = document.createTreeWalker(
+        rootEl, NodeFilter.SHOW_TEXT,
+        {
+            acceptNode(node) {
+                let p = node.parentElement;
+                while (p && p !== rootEl) {
+                    if (p.classList && (
+                        p.classList.contains("hljs-string") ||
+                        p.classList.contains("hljs-comment") ||
+                        p.classList.contains("hljs-regexp") ||
+                        p.classList.contains("hljs-symbol") ||
+                        p.classList.contains("hljs-doctag"))) {
+                        return NodeFilter.FILTER_REJECT;
+                    }
+                    p = p.parentElement;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        }
+    );
+
+    const targets = [];
+    let n;
+    while ((n = walker.nextNode())) targets.push(n);
+
+    targets.forEach(textNode => {
+        const text = textNode.nodeValue;
+        if (!/[(){}\[\]]/.test(text)) return;
+        const frag = document.createDocumentFragment();
+        let buf = "";
+        const flush = () => {
+            if (buf.length) {
+                frag.appendChild(document.createTextNode(buf));
+                buf = "";
+            }
+        };
+        for (const ch of text) {
+            if (OPENERS[ch]) {
+                flush();
+                const type = TYPE_PREFIX[ch];
+                const depth = stack.length % PALETTE_SIZE;
+                const span = document.createElement("span");
+                span.className = `bracket-${type}-${depth}`;
+                span.textContent = ch;
+                frag.appendChild(span);
+                stack.push({ char: ch, depth, type });
+            } else if (CLOSERS[ch]) {
+                flush();
+                const span = document.createElement("span");
+                const top = stack[stack.length - 1];
+                if (top && top.char === CLOSERS[ch]) {
+                    span.className = `bracket-${top.type}-${top.depth}`;
+                    stack.pop();
+                } else {
+                    span.className = "bracket-error";
+                }
+                span.textContent = ch;
+                frag.appendChild(span);
+            } else {
+                buf += ch;
+            }
+        }
+        flush();
+        textNode.parentNode.replaceChild(frag, textNode);
+    });
+}
+
+if (typeof hljs === "undefined") {
+    showDiag("highlight.js failed to load. Check network or download highlight.min.js locally.");
+} else {
+    hljs.registerLanguage("gdshader", gdshaderLang);
+
+    document.querySelectorAll("pre.code-block code").forEach(block => {
+        try {
+            hljs.highlightElement(block);
+        } catch (e) {
+            showDiag("highlight failed: " + e.message);
+            return;
+        }
+        const tokenCount = block.querySelectorAll("[class*='hljs-']").length;
+        if (tokenCount === 0) {
+            showDiag("Highlighting ran but produced 0 token spans. " +
+                     "Check that <code> has class='language-gdshader'.");
+            return;
+        }
+        colorizeBrackets(block);
+    });
+
+    document.querySelectorAll("pre.code-block code").forEach(block => {
+        const lines = block.innerHTML.split("\n");
+        block.innerHTML = lines.map((l, i) =>
+            `<span class="ln">${i + 1}</span>${l}`
+        ).join("\n");
+    });
+}
+</script>
+</body>
+</html>
